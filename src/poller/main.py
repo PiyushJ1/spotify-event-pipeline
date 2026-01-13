@@ -1,6 +1,8 @@
 from typing import Union
 from fastapi.responses import RedirectResponse
 from fastapi import FastAPI
+import urllib.parse
+import os
 
 # init app
 app = FastAPI(
@@ -25,9 +27,14 @@ def health_check():
 @app.get("/login")
 def login():
     scope = "user-read-recently-played user-read-currently-playing"
-    # params = {
-    #     "client_id": settings.spotify_client_id,
-
-    # }
-    url = f"https://google.com"
+    params = {
+        "client_id": os.environ.get("SPOTIFY_CLIENT_ID"),
+        "response_type": "code",
+        "redirect_url": os.environ.get("SPOTIFY_REDIRECT_URL"),
+        "scope": scope,
+    }
+    url = f"https://accounts.spotify.com/authorize?{urllib.parse.urlencode(params)}"
     return RedirectResponse(url)
+
+
+# @app.get("/callback")
