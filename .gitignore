@@ -1,0 +1,18 @@
+# Python build files
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.pytest_cache/
+
+# Env Variables 
+.env
+
+# Docker / Local Data
+postgres_data/
+.localstack/
+
+# IDE settings
+.vscode/
+.idea/
+.DS_Store
