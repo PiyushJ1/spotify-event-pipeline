@@ -16,3 +16,6 @@ postgres_data/
 .vscode/
 .idea/
 .DS_Store
+
+# terraform build files
+.terraform*
