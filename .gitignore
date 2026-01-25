@@ -9,7 +9,7 @@ venv/
 .env
 
 # Docker / Local Data
-postgres_data/
+volume/
 .localstack/
 
 # IDE settings
