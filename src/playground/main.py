@@ -9,8 +9,6 @@ load_dotenv()
 
 client_id = os.getenv("SPOTIFY_CLIENT_ID")
 client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
-QUEUE_NAME = "test-queue"
-AWS_ENDPOINT = "http://localhost:4566" # points to localstack
 spotify_api_url = "https://accounts.spotify.com/api/token"
 
 def get_auth_token():
