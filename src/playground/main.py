@@ -23,17 +23,19 @@ sqs = boto3.client(
 
 response = sqs.create_queue(QueueName=QUEUE_NAME)
 queue_url = response["QueueUrl"]
-print("Queue created: " + queue_url)
+print(f"Queue created: {queue_url}")
 
 
-def process_message():
+def process_message(track_num: int):
     # send message into queue
-    travis_top_track = get_artist_info()
+    travis_top_track = get_artist_top_tracks(track_num)
     sqs.send_message(QueueUrl=queue_url, MessageBody=travis_top_track)
     print("message sent")
 
     # process message
-    response = sqs.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=1, WaitTimeSeconds=2)
+    response = sqs.receive_message(
+        QueueUrl=queue_url, MaxNumberOfMessages=1, WaitTimeSeconds=2
+    )
 
     if "Messages" not in response:
         print("No messages in queue")
@@ -43,7 +45,7 @@ def process_message():
 
     sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=message["ReceiptHandle"])
 
-    print("message deleted")
+    print("message deleted\n")
 
 
 def get_access_token():
@@ -64,7 +66,7 @@ def get_access_token():
     return res.json()["access_token"]
 
 
-def get_artist_info():
+def get_artist_top_tracks(track_num: int):
     access_token = get_access_token()
     headers = {"Authorization": "Bearer " + access_token}
 
@@ -72,8 +74,10 @@ def get_artist_info():
         f"{spotify_artist_url}/0Y5tJX1MQlPlqiwlOH1tJY/top-tracks", headers=headers
     )
 
-    return res.json()["tracks"][9]["name"]
+    return res.json()["tracks"][track_num]["name"]
 
-track_num = 0
-while track_num < 10:
-    
+
+i = 0
+while i < 10:
+    process_message(i)
+    i += 1
