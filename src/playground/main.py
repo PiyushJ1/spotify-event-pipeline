@@ -4,6 +4,9 @@ import os
 from dotenv import load_dotenv
 import json
 import base64
+from sqlalchemy.orm import Session
+from ..common.db import engine, SessionLocal, Base
+from ..common.models import SimpleSong
 
 load_dotenv()
 
@@ -30,7 +33,7 @@ print(f"Queue created: {queue_url}")
 def process_message(track_num: int):
     # send message into queue
     travis_top_track = get_artist_top_tracks(track_num)
-    sqs.send_message(QueueUrl=queue_url, MessageBody=travis_top_track)
+    sqs.send_message(QueueUrl=queue_url, MessageBody=json.dumps(travis_top_track))
     print("message sent")
 
     # process message
@@ -42,7 +45,26 @@ def process_message(track_num: int):
         print("No messages in queue")
         return
     message = response["Messages"][0]
-    print(f"received message: {message['Body']}")
+    # print(f"received message: {message['Body']}")
+    body = json.loads(message["Body"])
+
+    db = SessionLocal()
+
+    try:
+        exists = db.query(SimpleSong).filter_by(spotify_id=body["spotify_id"]).first()
+        if not exists:
+            new_track = SimpleSong(
+                name=body["name"], artist=body["artist"], spotify_id=body["spotify_id"]
+            )
+            db.add(new_track)
+            db.commit()
+            print("--- song saved to db! ---")
+        else:
+            print("=== song already exists in the db ===")
+    except Exception as e:
+        print(f"error in db: {e}")
+    finally:
+        db.close()
 
     sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=message["ReceiptHandle"])
 
@@ -75,10 +97,16 @@ def get_artist_top_tracks(track_num: int):
     headers = {"Authorization": "Bearer " + _access_token}
 
     res = requests.get(
-        f"{spotify_artist_url}/0Y5tJX1MQlPlqiwlOH1tJY/top-tracks", headers=headers
+        f"{spotify_artist_url}/4PULA4EFzYTrxYvOVlwpiQ/top-tracks", headers=headers
     )
 
-    return res.json()["tracks"][track_num]["name"]
+    track_data = res.json()["tracks"][track_num]
+
+    return {
+        "spotify_id": track_data["id"],
+        "name": track_data["name"],
+        "artist": track_data["artists"][0]["name"],
+    }
 
 
 i = 0
