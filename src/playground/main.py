@@ -12,6 +12,7 @@ client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
 spotify_api_url = "https://accounts.spotify.com/api/token"
 spotify_artist_url = "https://api.spotify.com/v1/artists"
 QUEUE_NAME = "sample-queue"
+_access_token = None
 
 sqs = boto3.client(
     "sqs",
@@ -67,8 +68,11 @@ def get_access_token():
 
 
 def get_artist_top_tracks(track_num: int):
-    access_token = get_access_token()
-    headers = {"Authorization": "Bearer " + access_token}
+    global _access_token
+    if _access_token is None:
+        _access_token = get_access_token()
+
+    headers = {"Authorization": "Bearer " + _access_token}
 
     res = requests.get(
         f"{spotify_artist_url}/0Y5tJX1MQlPlqiwlOH1tJY/top-tracks", headers=headers
