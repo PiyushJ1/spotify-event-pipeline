@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 venv/
 .pytest_cache/
+__init__.py
 
 # Env Variables 
 .env
