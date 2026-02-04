@@ -17,7 +17,7 @@ spotify_artist_url = "https://api.spotify.com/v1/artists"
 QUEUE_NAME = "sample-queue"
 _access_token = None
 
-artist_uri = "1RyvyyTE3xzB2ZywiAwp0i" # future
+artist_uri = "1RyvyyTE3xzB2ZywiAwp0i"  # future
 
 sqs = boto3.client(
     "sqs",
@@ -98,9 +98,7 @@ def get_artist_top_tracks(track_num: int):
 
     headers = {"Authorization": "Bearer " + _access_token}
 
-    res = requests.get(
-        f"{spotify_artist_url}/{artist_uri}/top-tracks", headers=headers
-    )
+    res = requests.get(f"{spotify_artist_url}/{artist_uri}/top-tracks", headers=headers)
 
     track_data = res.json()["tracks"][track_num]
 

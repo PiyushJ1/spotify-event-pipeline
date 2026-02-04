@@ -5,7 +5,6 @@ __pycache__/
 venv/
 .pytest_cache/
 __init__.py
-requirements.txt
 
 # Env Variables 
 .env
