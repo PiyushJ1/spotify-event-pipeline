@@ -9,7 +9,7 @@ from src.common.models import SimpleSong, AuthToken, Track, ListeningHistory
 
 def init_db():
     Base.metadata.create_all(bind=engine)
-    print("table created in db")
+    print("-- Schema created --")
 
 
 init_db()

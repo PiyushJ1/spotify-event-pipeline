@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from src.common.db import Base
 
 
@@ -16,7 +18,7 @@ class SimpleSong(Base):
 
 # spotify OAuth2 token
 class AuthToken(Base):
-    __tablename__ == "auth_tokens"
+    __tablename__ = "auth_tokens"
 
     id = Column(Integer, primary_key=True)
     access_token = Column(String, nullable=False)
@@ -29,7 +31,7 @@ class AuthToken(Base):
 
 # proper full details for a track
 class Track(Base):
-    __tablename__ == "tracks"
+    __tablename__ = "tracks"
 
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
@@ -41,3 +43,20 @@ class Track(Base):
     popularity = Column(Integer)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+# stores ALL songs played by user
+class ListeningHistory(Base):
+    __tablename__ = "listening_history"
+
+    id = Column(String, primary_key=True, index=True)
+    track_id = Column(String, ForeignKey("tracks.id"), nullable=False)
+    played_at = Column(DateTime(timezone=True), nullable=False)
+
+    ingested_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    track = relationship("Track")  # link the tables
+
+    __table_args__ = UniqueConstraint(
+        "track_id", "played_at", name="uix_track_played_at"
+    )
