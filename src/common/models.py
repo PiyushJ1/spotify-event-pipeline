@@ -57,6 +57,7 @@ class ListeningHistory(Base):
 
     track = relationship("Track")  # link the tables
 
-    __table_args__ = UniqueConstraint(
-        "track_id", "played_at", name="uix_track_played_at"
+    # idempotency (prevent duplicate track events from being stored)
+    __table_args__ = (
+        UniqueConstraint("track_id", "played_at", name="uix_track_played_at"),
     )
