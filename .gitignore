@@ -17,6 +17,8 @@ volume/
 .vscode/
 .idea/
 .DS_Store
+.cursor/
+.agents/
 
 # terraform build files
 .terraform*
