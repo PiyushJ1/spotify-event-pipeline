@@ -47,7 +47,6 @@ def login():
 
     url = f"https://accounts.spotify.com/authorize?{urllib.parse.urlencode(params)}"
 
-    print(url)
     return RedirectResponse(url)
 
 
@@ -95,7 +94,7 @@ def callback(code: str = Query(...)):
 def recent_songs(access_token: str):
     headers = {"Authorization": "Bearer " + access_token}
 
-    url = "https://api.spotify.com/v1/me/player/recently-played"
+    url = "https://api.spotify.com/v1/me/player/recently-played?limit=50"
 
     res = requests.get(url, headers=headers)
 
