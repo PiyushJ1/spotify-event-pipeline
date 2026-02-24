@@ -16,6 +16,18 @@ class SimpleSong(Base):
     spotify_id = Column(String, unique=True)
 
 
+# user info table
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    spotify_user_id = Column(String, unique=True, nullable=False, index=True)
+    display_name = Column(String, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+    auth_token = relationship("AuthToken", back_populates="user", uselist=False)
+
+
 # spotify OAuth2 token
 class AuthToken(Base):
     __tablename__ = "auth_tokens"
@@ -26,6 +38,10 @@ class AuthToken(Base):
     expires_at = Column(Integer, nullable=False)
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    user = relationship(
+        "User",
     )
 
 
