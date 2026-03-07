@@ -55,7 +55,7 @@ class Track(Base):
     album = Column(String)
 
     image_url = Column(String)
-    duration_ms = Column(String)
+    duration_ms = Column(Integer)
     popularity = Column(Integer)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -65,7 +65,7 @@ class Track(Base):
 class ListeningHistory(Base):
     __tablename__ = "listening_history"
 
-    id = Column(String, primary_key=True, index=True)
+    id = Column(String, primary_key=True, autoincrement=True)
     track_id = Column(String, ForeignKey("tracks.id"), nullable=False)
     played_at = Column(DateTime(timezone=True), nullable=False)
 
