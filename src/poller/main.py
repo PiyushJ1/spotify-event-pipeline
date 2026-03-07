@@ -7,8 +7,25 @@ import requests
 import urllib.parse
 import os
 import secrets
+import boto3
+import json
+
+from ..common.db import engine, SessionLocal, Base
+from ..common.models import ListeningHistory
 
 load_dotenv()
+
+sqs = boto3.client(
+    "sqs",
+    endpoint_url="http://localhost:4566",
+    region_name="ap-southeast-2",
+    aws_access_key_id="test",
+    aws_secret_access_key="test",
+)
+
+res = sqs.create_queue(QueueName="recent-songs-queue")
+queue_url = res["QueueUrl"]
+print(f"Queue created: {queue_url}")
 
 request_access_token_url = "https://accounts.spotify.com/api/token"
 
@@ -78,6 +95,7 @@ def callback(code: str = Query(...)):
     # recent_songs(data["access_token"])
 
     token = data["access_token"]
+    # token = data["refresh_token"]
 
     # return {
     #     "access_token": data["access_token"],
@@ -98,4 +116,45 @@ def recent_songs(access_token: str):
 
     res = requests.get(url, headers=headers)
 
+    process_songs(res.json())
+
+    # return res.json()["items"][0]["track"]["name"]
     return res.json()
+
+def process_songs(songs: dict):
+    for item in songs.get("items", []):
+        track = item.get("track", {})
+        artists = track.get("artists", [])
+        album = track.get("album", {})
+
+        # collect artist names
+        artist_names = []
+        for artist in track.get("artists", []):
+            name = artist.get("name")
+            artist_names.append(name)
+        
+        message_body = {
+            # Track table fields
+            "track_id": track.get("id"),
+            "track_name": track.get("name"),
+            "artist": artist_names,
+            "album": album.get("name"),
+            "image_url": album.get("images", [{}])[0].get("url") if album.get("images") else None,
+            "duration_ms": track.get("duration_ms"),
+            "popularity": track.get("popularity"),
+
+            # ListeningHistory table fields
+            "played_at": item.get("played_at"),
+        }
+
+        print(f"Sending to sqs: {json.dumps(message_body)}")
+
+        # res = sqs.receive_message(
+        #     QueueUrl=queue_url, MaxNumberOfMessages=1, WaitTimeSeconds=2
+        # )
+
+        # if "Messages" not in res:
+        #     print("No messages in queue")
+        #     return
+        
+        # message = res["Messages"]
