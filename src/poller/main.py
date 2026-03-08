@@ -1,17 +1,18 @@
-from typing import Union
-from fastapi.responses import RedirectResponse
-import base64
 from fastapi import FastAPI, Query
+from fastapi.responses import RedirectResponse
 from dotenv import load_dotenv
 import requests
 import urllib.parse
 import os
-import secrets
 import boto3
 import json
 
-from ..common.db import engine, SessionLocal, Base
-from ..common.models import ListeningHistory
+from ..common.db import SessionLocal
+from .auth import (
+    exchange_code_for_tokens,
+    save_tokens,
+    get_valid_access_token,
+)
 
 load_dotenv()
 
@@ -27,108 +28,74 @@ res = sqs.create_queue(QueueName="recent-songs-queue")
 queue_url = res["QueueUrl"]
 print(f"Queue created: {queue_url}")
 
-request_access_token_url = "https://accounts.spotify.com/api/token"
-
-# init app
 app = FastAPI(
     title="Spotify Poller",
     description="Service to poll the spotify api and push events to queue",
 )
 
 
-# define a basic route
 @app.get("/")
 def read_root():
     return {"status": "online", "service": "poller"}
 
 
-# health check for AWS services
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
 
 
-# handle OAuth2 user Spotify login
 @app.get("/login")
 def login():
     scope = "user-read-recently-played user-read-currently-playing"
-    # state = secrets.token_urlsafe(12)  # for security purposes
-
     params = {
         "client_id": os.environ.get("SPOTIFY_CLIENT_ID"),
         "response_type": "code",
         "redirect_uri": os.environ.get("SPOTIFY_CALLBACK_URL"),
         "scope": scope,
-        # "state": state,
     }
 
     url = f"https://accounts.spotify.com/authorize?{urllib.parse.urlencode(params)}"
-
     return RedirectResponse(url)
 
 
 @app.get("/callback")
 def callback(code: str = Query(...)):
-    client_id = os.environ.get("SPOTIFY_CLIENT_ID")
-    client_secret = os.environ.get("SPOTIFY_CLIENT_SECRET")
-    redirect_uri = os.environ.get("SPOTIFY_CALLBACK_URL")
+    data = exchange_code_for_tokens(code)
 
-    payload = {
-        "code": code,
-        "redirect_uri": redirect_uri,
-        "grant_type": "authorization_code",
-    }
+    token = data.get("access_token")
+    if not token:
+        return {"error": "No access_token returned", "spotify_response": data}
 
-    encoded = base64.b64encode(
-        (client_id + ":" + client_secret).encode("utf-8")
-    ).decode("utf-8")
-
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": "Basic " + encoded,
-    }
-
-    res = requests.post(request_access_token_url, headers=headers, data=payload)
-
-    data = res.json()
-
-    # recent_songs(data["access_token"])
-
-    token = data["access_token"]
-    # token = data["refresh_token"]
-
-    # return {
-    #     "access_token": data["access_token"],
-    #     "refresh_token": data["refresh_token"],
-    #     "expires_in": data["expires_in"],
-    # }
-
-    # TODO IMPORTANT: save the info to db
+    # TODO: replace user_id=1 with actual Spotify user lookup
+    save_tokens(
+        user_id=1,
+        access_token=token,
+        refresh_token=data.get("refresh_token"),
+        expires_in=data.get("expires_in", 3600),
+    )
 
     return RedirectResponse(url=f"/recent-songs?access_token={token}")
 
 
 @app.get("/recent-songs")
-def recent_songs(access_token: str):
-    headers = {"Authorization": "Bearer " + access_token}
+def recent_songs(access_token: str = None):
+    if not access_token:
+        access_token = get_valid_access_token(user_id=1)
 
+    headers = {"Authorization": f"Bearer {access_token}"}
     url = "https://api.spotify.com/v1/me/player/recently-played?limit=50"
 
     res = requests.get(url, headers=headers)
-
     process_songs(res.json())
 
-    # return res.json()["items"][0]["track"]["name"]
     return res.json()
 
 
 def process_songs(songs: dict):
     for item in songs.get("items", []):
         track = item.get("track", {})
-        artists = track.get("artists", [])
         album = track.get("album", {})
 
-        # collect artist names
         artist_names = ", ".join(
             artist.get("name")
             for artist in track.get("artists", [])
@@ -136,7 +103,7 @@ def process_songs(songs: dict):
         )
 
         message_body = {
-            # Track table fields
+            "user_id": 1,  # TODO: pass actual user id
             "track_id": track.get("id"),
             "track_name": track.get("name"),
             "artist": artist_names,
@@ -146,7 +113,6 @@ def process_songs(songs: dict):
             ),
             "duration_ms": track.get("duration_ms"),
             "popularity": track.get("popularity"),
-            # ListeningHistory table fields
             "played_at": item.get("played_at"),
         }
 
