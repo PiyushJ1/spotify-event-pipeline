@@ -57,7 +57,7 @@ def consume():
                 )
                 db.add(history)
                 db.commit()
-                print(f"Saved: {body['track_name']}")
+                print(f"Saved: {body['track_name']} by {body['artist']}")
 
                 # Delete message after processing
                 sqs.delete_message(
