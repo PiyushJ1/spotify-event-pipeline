@@ -4,7 +4,7 @@ import time
 import requests
 
 from ..common.db import SessionLocal
-from ..common.models import AuthToken
+from ..common.models import AuthToken, User
 
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
 
@@ -107,5 +107,30 @@ def get_valid_access_token(user_id: int) -> str:
             return refresh_access_token(user_id)
 
         return auth.access_token
+    finally:
+        db.close()
+
+def get_or_create_new_user(access_token: str):
+    res = requests.get(
+        "https://api.spotify.com/v1/me",
+        headers={"Authorization": f"Bearer {access_token}"}
+    )
+
+    user_profile = res.json()
+
+    spotify_user_id = user_profile["id"]
+    display_name = user_profile["display_name"]
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter_by(spotify_user_id=spotify_user_id).first()
+
+        if not user:
+            user = User(spotify_user_id=spotify_user_id, display_name=display_name)
+            db.add(user)
+            db.commit()
+            print(f"Created new user, id: {spotify_user_id}, name: {display_name}")
+        
+        return user.id
     finally:
         db.close()
