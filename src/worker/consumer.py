@@ -32,11 +32,10 @@ def consume():
 
         for message in res["Messages"]:
             body = json.loads(message["Body"])
-            print(f"Consumed: {body['track_name']} by {body['artist']}")
 
             db = SessionLocal()
             try:
-                # Upsert Track (insert if not exists)
+                # Upsert Track (update + insert track if it doesnt exist)
                 existing_track = db.query(Track).filter_by(id=body["track_id"]).first()
                 if not existing_track:
                     track = Track(
@@ -53,6 +52,7 @@ def consume():
                 # Insert ListeningHistory
                 history = ListeningHistory(
                     track_id=body["track_id"],
+                    user_id=body.get("user_id", 1),
                     played_at=body["played_at"],
                 )
                 db.add(history)
@@ -68,7 +68,7 @@ def consume():
             except IntegrityError:
                 db.rollback()
                 print(
-                    f"Duplicate, skipping: {body['track_name']} at {body['played_at']}"
+                    f"Duplicate track, skipped: {body['track_name']} at {body['played_at']}"
                 )
 
                 # delete duplicates so they dont need to reprocessed
@@ -83,8 +83,6 @@ def consume():
                 db.close()
 
         time.sleep(1)
-
-    exit(1)
 
 
 consume()
