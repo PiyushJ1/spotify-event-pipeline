@@ -76,24 +76,23 @@ def callback(code: str = Query(...)):
         expires_in=data.get("expires_in"),
     )
 
-    return RedirectResponse(url=f"/recent-songs?access_token={token}")
+    return RedirectResponse(url=f"/recent-songs?user_id={user_id}")
 
 
 @app.get("/recent-songs")
-def recent_songs(access_token: str = None):
-    if not access_token:
-        access_token = get_valid_access_token(user_id=1)
+def recent_songs(user_id: int = Query(...)):
+    access_token = get_valid_access_token(user_id)
 
     headers = {"Authorization": f"Bearer {access_token}"}
     url = "https://api.spotify.com/v1/me/player/recently-played?limit=50"
 
     res = requests.get(url, headers=headers)
-    process_songs(res.json())
+    process_songs(res.json(), user_id)
 
     return res.json()
 
 
-def process_songs(songs: dict):
+def process_songs(songs: dict, user_id: int):
     for item in songs.get("items", []):
         track = item.get("track", {})
         album = track.get("album", {})
@@ -105,7 +104,7 @@ def process_songs(songs: dict):
         )
 
         message_body = {
-            "user_id": 1,  # TODO: pass actual user id
+            "user_id": user_id,
             "track_id": track.get("id"),
             "track_name": track.get("name"),
             "artist": artist_names,
