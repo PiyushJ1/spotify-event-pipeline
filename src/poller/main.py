@@ -12,7 +12,7 @@ from .auth import (
     exchange_code_for_tokens,
     save_tokens,
     get_valid_access_token,
-    get_or_create_new_user
+    get_or_create_new_user,
 )
 
 load_dotenv()

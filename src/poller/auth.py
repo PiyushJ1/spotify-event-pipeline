@@ -110,10 +110,11 @@ def get_valid_access_token(user_id: int) -> str:
     finally:
         db.close()
 
+
 def get_or_create_new_user(access_token: str):
     res = requests.get(
         "https://api.spotify.com/v1/me",
-        headers={"Authorization": f"Bearer {access_token}"}
+        headers={"Authorization": f"Bearer {access_token}"},
     )
 
     user_profile = res.json()
@@ -130,7 +131,7 @@ def get_or_create_new_user(access_token: str):
             db.add(user)
             db.commit()
             print(f"Created new user, id: {spotify_user_id}, name: {display_name}")
-        
+
         return user.id
     finally:
         db.close()
