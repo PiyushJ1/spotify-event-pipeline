@@ -33,6 +33,7 @@ class AuthToken(Base):
     __tablename__ = "auth_tokens"
 
     id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     access_token = Column(String, nullable=False)
     refresh_token = Column(String, nullable=False)
     expires_at = Column(Integer, nullable=False)
@@ -40,9 +41,7 @@ class AuthToken(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    user = relationship(
-        "User",
-    )
+    user = relationship("User", back_populates="auth_token")
 
 
 # proper full details for a track
@@ -65,13 +64,14 @@ class Track(Base):
 class ListeningHistory(Base):
     __tablename__ = "listening_history"
 
-    id = Column(String, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     track_id = Column(String, ForeignKey("tracks.id"), nullable=False)
     played_at = Column(DateTime(timezone=True), nullable=False)
 
     ingested_at = Column(DateTime(timezone=True), server_default=func.now())
 
     track = relationship("Track")  # link the tables
+    user = relationship("User")
 
     # idempotency (prevent duplicate track events from being stored)
     __table_args__ = (
