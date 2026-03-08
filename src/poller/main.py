@@ -12,6 +12,7 @@ from .auth import (
     exchange_code_for_tokens,
     save_tokens,
     get_valid_access_token,
+    get_or_create_new_user
 )
 
 load_dotenv()
@@ -66,12 +67,13 @@ def callback(code: str = Query(...)):
     if not token:
         return {"error": "No access_token returned", "spotify_response": data}
 
-    # TODO: replace user_id=1 with actual Spotify user lookup
+    user_id = get_or_create_new_user(token)
+
     save_tokens(
-        user_id=1,
+        user_id=user_id,
         access_token=token,
         refresh_token=data.get("refresh_token"),
-        expires_in=data.get("expires_in", 3600),
+        expires_in=data.get("expires_in"),
     )
 
     return RedirectResponse(url=f"/recent-songs?access_token={token}")
