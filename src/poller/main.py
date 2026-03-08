@@ -121,6 +121,7 @@ def recent_songs(access_token: str):
     # return res.json()["items"][0]["track"]["name"]
     return res.json()
 
+
 def process_songs(songs: dict):
     for item in songs.get("items", []):
         track = item.get("track", {})
@@ -128,33 +129,32 @@ def process_songs(songs: dict):
         album = track.get("album", {})
 
         # collect artist names
-        artist_names = []
-        for artist in track.get("artists", []):
-            name = artist.get("name")
-            artist_names.append(name)
-        
+        artist_names = ", ".join(
+            artist.get("name")
+            for artist in track.get("artists", [])
+            if artist.get("name")
+        )
+
         message_body = {
             # Track table fields
             "track_id": track.get("id"),
             "track_name": track.get("name"),
             "artist": artist_names,
             "album": album.get("name"),
-            "image_url": album.get("images", [{}])[0].get("url") if album.get("images") else None,
+            "image_url": (
+                album.get("images", [{}])[0].get("url") if album.get("images") else None
+            ),
             "duration_ms": track.get("duration_ms"),
             "popularity": track.get("popularity"),
-
             # ListeningHistory table fields
             "played_at": item.get("played_at"),
         }
 
         print(f"Sending to sqs: {json.dumps(message_body)}")
 
-        # res = sqs.receive_message(
-        #     QueueUrl=queue_url, MaxNumberOfMessages=1, WaitTimeSeconds=2
-        # )
+        sqs.send_message(
+            QueueUrl=queue_url,
+            MessageBody=json.dumps(message_body),
+        )
 
-        # if "Messages" not in res:
-        #     print("No messages in queue")
-        #     return
-        
-        # message = res["Messages"]
+    print("Sent songs to sqs")
