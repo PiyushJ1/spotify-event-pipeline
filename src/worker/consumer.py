@@ -1,7 +1,7 @@
 import boto3
 import json
 import time
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from ..common.db import SessionLocal
 from ..common.models import Track, ListeningHistory
 
@@ -76,6 +76,11 @@ def consume():
                     QueueUrl=queue_url,
                     ReceiptHandle=message["ReceiptHandle"],
                 )
+            except OperationalError as e:
+                db.rollback()
+                print(f"DB connection error: {e}")
+                print("Skipping rest of batch — messages will be retried")
+                break
             except Exception as e:
                 db.rollback()
                 print(f"DB error: {e}")
