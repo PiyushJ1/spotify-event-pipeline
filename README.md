@@ -114,3 +114,7 @@ docker exec -it spotify-event-pipeline-postgres-1 psql -U admin -d spotify_db -c
 - If you see `SSL connection has been closed unexpectedly`, your `DATABASE_URL` is likely pointing to Neon/remote DB instead of local Docker Postgres.
 - `SELECT * FROM listening_history;` in `psql` may show older rows first. Use `ORDER BY ingested_at DESC` for newest records.
 - FastAPI `--reload` can restart on file changes and recreate queue client logs; this is normal in dev.
+
+## Features that still need to be added
+- JWT auth or any other way to prevent users from accessing the listening history of other users
+
