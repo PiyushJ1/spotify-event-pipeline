@@ -117,4 +117,7 @@ docker exec -it spotify-event-pipeline-postgres-1 psql -U admin -d spotify_db -c
 
 ## Features that still need to be added
 - JWT auth or any other way to prevent users from accessing the listening history of other users
+- use aws eventbridge to poll the spotify api every two hours using lambda
+- process the data through aws sqs + store into neondb
+- use aws sns to provide insights into the user's listening history at the end of the day via email
 
