@@ -42,7 +42,9 @@ erDiagram
         datetime ingested_at
     }
 
-    USERS ||--|| AUTH_TOKENS : has
-    USERS ||--o{ LISTENING_HISTORY : listens
-    TRACKS ||--o{ LISTENING_HISTORY : appears_in
+    USERS ||--|| AUTH_TOKENS : has_1-to-1
+    USERS ||--o{ LISTENING_HISTORY : listens_1-to-many
+    TRACKS ||--o{ LISTENING_HISTORY : appears_in_1-to-many
 ```
+
+
