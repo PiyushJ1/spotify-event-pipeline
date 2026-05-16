@@ -52,6 +52,7 @@ def consume():
                 # Insert ListeningHistory
                 history = ListeningHistory(
                     track_id=body["track_id"],
+                    track_name=body["track_name"],
                     user_id=body.get("user_id", 1),
                     played_at=body["played_at"],
                 )

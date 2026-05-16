@@ -66,6 +66,7 @@ class ListeningHistory(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     track_id = Column(String, ForeignKey("tracks.id"), nullable=False)
+    track_name = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     played_at = Column(DateTime(timezone=True), nullable=False)
 
