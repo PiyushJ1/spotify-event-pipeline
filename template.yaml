@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Spotify event pipeline Lambdas and EventBridge schedule
+
+Globals:
+  Function:
+    Runtime: python3.11
+    Timeout: 30
+    MemorySize: 256
+    Tracing: Active
+
+Parameters:
+  SpotifyClientId:
+    Type: String
+  SpotifyClientSecret:
+    Type: String
+  SpotifyCallbackUrl:
+    Type: String
+  DatabaseUrl:
+    Type: String
+
+Resources:
+  SpotifyQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: recent-songs-queue
+
+  PollerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: spotify-poller
+      CodeUri: .
+      Handler: src.poller.handler.handler
+      Environment:
+        Variables:
+          SPOTIFY_CLIENT_ID: !Ref SpotifyClientId
+          SPOTIFY_CLIENT_SECRET: !Ref SpotifyClientSecret
+          SPOTIFY_CALLBACK_URL: !Ref SpotifyCallbackUrl
+          DATABASE_URL: !Ref DatabaseUrl
+          SQS_QUEUE_URL: !Ref SpotifyQueue
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: recent-songs-queue
+      Events:
+        EveryMinute:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 minute)
+            Enabled: true
+
+  ConsumerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: spotify-consumer
+      CodeUri: .
+      Handler: src.worker.handler.handler
+      Environment:
+        Variables:
+          DATABASE_URL: !Ref DatabaseUrl
+      Events:
+        QueueEvent:
+          Type: SQS
+          Properties:
+            Queue: !Ref SpotifyQueue
+            BatchSize: 10
+
+Outputs:
+  PollerFunctionArn:
+    Value: !GetAtt PollerFunction.Arn
+  ConsumerFunctionArn:
+    Value: !GetAtt ConsumerFunction.Arn
+  QueueUrl:
+    Value: !Ref SpotifyQueue
