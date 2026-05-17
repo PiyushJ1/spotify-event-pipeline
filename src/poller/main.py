@@ -63,18 +63,16 @@ def login():
 def callback(code: str = Query(...)):
     data = exchange_code_for_tokens(code)
 
-    token = data.get("access_token")
-    if not token:
+    access_token = data.get("access_token")
+    refresh_token = data.get("refresh_token")
+    expires_in = data.get("expires_in")
+
+    if not access_token or not refresh_token or not expires_in:
         return {"error": "No access_token returned", "spotify_response": data}
 
-    user_id = get_or_create_new_user(token)
+    user_id = get_or_create_new_user(access_token)
 
-    save_tokens(
-        user_id=user_id,
-        access_token=token,
-        refresh_token=data.get("refresh_token"),
-        expires_in=data.get("expires_in"),
-    )
+    save_tokens(user_id, access_token, refresh_token, expires_in)
 
     return RedirectResponse(url=f"/recent-songs?user_id={user_id}")
 
