@@ -53,7 +53,8 @@ def consume():
                 history = ListeningHistory(
                     track_id=body["track_id"],
                     track_name=body["track_name"],
-                    user_id=body.get("user_id", 1),
+                    artist=body["artist"],
+                    user_id=body.get("user_id", 1),  # fallback to user_id = 1
                     played_at=body["played_at"],
                 )
                 db.add(history)
