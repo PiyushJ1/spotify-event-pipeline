@@ -22,24 +22,21 @@ logger = logging.getLogger("poller.handler")
 
 
 def _get_sqs_client():
-    endpoint = os.environ.get("SQS_ENDPOINT_URL")
     region = os.environ.get("AWS_REGION", "ap-southeast-2")
     aws_key = os.environ.get("AWS_ACCESS_KEY_ID")
-    aws_secret = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    aws_secret = os.environ.get("AWS_ACCESS_SECRET_KEY")
 
     params = {"region_name": region}
     if aws_key and aws_secret:
         params["aws_access_key_id"] = aws_key
         params["aws_secret_access_key"] = aws_secret
-    if endpoint:
-        params["endpoint_url"] = endpoint
 
     return boto3.client("sqs", **params)
 
 
 def _get_queue_url(sqs) -> str:
     # Prefer explicit URL in environment for production
-    url = os.environ.get("SQS_QUEUE_URL")
+    url = os.getenv("SQS_QUEUE_URL")
     if url:
         return url
 
@@ -86,11 +83,10 @@ def handler(event, context):
 
     Environment variables used:
     - SQS_QUEUE_URL or SQS_QUEUE_NAME
-    - SQS_ENDPOINT_URL (optional, for LocalStack)
     - AWS_REGION (optional)
     """
     sqs = _get_sqs_client()
-    queue_url = _get_queue_url(sqs)
+    queue_url = os.getenv("SQS_QUEUE_URL")
 
     db = SessionLocal()
     try:

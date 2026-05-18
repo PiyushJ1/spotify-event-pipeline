@@ -19,14 +19,13 @@ load_dotenv()
 
 sqs = boto3.client(
     "sqs",
-    endpoint_url="http://localhost:4566",
-    region_name="ap-southeast-2",
-    aws_access_key_id="test",
-    aws_secret_access_key="test",
+    region_name=os.getenv("AWS_REGION"),
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_ACCESS_SECRET_KEY"),
 )
 
-res = sqs.create_queue(QueueName="recent-songs-queue")
-queue_url = res["QueueUrl"]
+queue_url = os.getenv("SQS_QUEUE_URL")
+
 print(f"Queue created: {queue_url}")
 
 app = FastAPI(
