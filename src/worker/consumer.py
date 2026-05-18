@@ -1,19 +1,23 @@
 import boto3
 import json
 import time
+import os
+from dotenv import load_dotenv
 from sqlalchemy.exc import IntegrityError, OperationalError
 from ..common.db import SessionLocal
 from ..common.models import Track, ListeningHistory
 
+load_dotenv()
+
 sqs = boto3.client(
     "sqs",
-    endpoint_url="http://localhost:4566",
     region_name="ap-southeast-2",
-    aws_access_key_id="test",
-    aws_secret_access_key="test",
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_ACCESS_SECRET_KEY"),
 )
 
-queue_url = sqs.get_queue_url(QueueName="recent-songs-queue")["QueueUrl"]
+# queue_url = sqs.get_queue_url(QueueName="recent-songs-queue")["QueueUrl"]
+queue_url = "https://sqs.ap-southeast-2.amazonaws.com/555379836133/spotify-queue"
 
 
 def consume():
@@ -92,4 +96,5 @@ def consume():
         time.sleep(1)
 
 
-consume()
+if __name__ == "__main__":
+    consume()
