@@ -25,7 +25,7 @@ def run_test():
     #     print(f"Error creating queue: {e}")
     #     return
 
-    queue_url = "https://sqs.ap-southeast-2.amazonaws.com/555379836133/spotify-queue"
+    queue_url = os.getenv("SQS_QUEUE_URL")
     print("Sending Messages...")
     sqs.send_message(QueueUrl=queue_url, MessageBody="Hello from Python!")
     sqs.send_message(QueueUrl=queue_url, MessageBody="Hello world")

@@ -17,7 +17,7 @@ sqs = boto3.client(
 )
 
 # queue_url = sqs.get_queue_url(QueueName="recent-songs-queue")["QueueUrl"]
-queue_url = "https://sqs.ap-southeast-2.amazonaws.com/555379836133/spotify-queue"
+queue_url = os.getenv("SQS_QUEUE_URL")
 
 
 def consume():
