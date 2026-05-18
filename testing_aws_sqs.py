@@ -1,29 +1,31 @@
 import boto3
-import time
+import os, sys
+from dotenv import load_dotenv
 
-# use LocalStack to emulate aws
+load_dotenv()
+
+
+# create sqs instance
 sqs = boto3.client(
     "sqs",
-    endpoint_url="http://localhost:4566",
     region_name="ap-southeast-2",
-    aws_access_key_id="test",
-    aws_secret_access_key="test",
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_ACCESS_SECRET_KEY"),
 )
-
-QUEUE_NAME = "test-queue"
 
 
 def run_test():
     print("creating queue ~~~")
-    try:
-        # create queue
-        response = sqs.create_queue(QueueName=QUEUE_NAME)
-        queue_url = response["QueueUrl"]
-        print(f"Queue Created: {queue_url}")
-    except Exception as e:
-        print(f"Error creating queue: {e}")
-        return
+    # try:
+    #     # create queue
+    #     response = sqs.create_queue(QueueName=QUEUE_NAME)
+    #     queue_url = response["QueueUrl"]
+    #     print(f"Queue Created: {queue_url}")
+    # except Exception as e:
+    #     print(f"Error creating queue: {e}")
+    #     return
 
+    queue_url = "https://sqs.ap-southeast-2.amazonaws.com/555379836133/spotify-queue"
     print("Sending Messages...")
     sqs.send_message(QueueUrl=queue_url, MessageBody="Hello from Python!")
     sqs.send_message(QueueUrl=queue_url, MessageBody="Hello world")
@@ -35,7 +37,7 @@ def run_test():
 
     while True:
         response = sqs.receive_message(
-            QueueUrl=queue_url, MaxNumberOfMessages=1, WaitTimeSeconds=2  # Short wait
+            QueueUrl=queue_url, MaxNumberOfMessages=1, WaitTimeSeconds=1  # Short wait
         )
 
         if "Messages" not in response:
