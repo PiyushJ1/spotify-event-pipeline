@@ -6,7 +6,6 @@ Usage:
 This imports the handler and invokes it once. It loads the project's .env automatically.
 """
 
-import os
 from dotenv import load_dotenv
 import time
 
