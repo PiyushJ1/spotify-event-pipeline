@@ -2,6 +2,10 @@
 
 Event-driven pipeline that fetches recently played Spotify tracks, pushes them to SQS (LocalStack), and persists them in PostgreSQL.
 
+### Use https://spotify-event-pipeline-production.up.railway.app
+
+#### Use https://spotify-event-pipeline-production.up.railway.app/login to authenticate Spotify account
+
 ## End-to-End User Flow
 1. Start local infra: PostgreSQL + LocalStack.
 2. Start FastAPI poller service.
