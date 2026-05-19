@@ -24,7 +24,7 @@ logger = logging.getLogger("poller.handler")
 def _get_sqs_client():
     region = os.environ.get("AWS_REGION", "ap-southeast-2")
     aws_key = os.environ.get("AWS_ACCESS_KEY_ID")
-    aws_secret = os.environ.get("AWS_ACCESS_SECRET_KEY")
+    aws_secret = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
     params = {"region_name": region}
     if aws_key and aws_secret:
