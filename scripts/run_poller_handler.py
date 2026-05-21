@@ -17,13 +17,15 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+from src.worker.consumer import consume
+
+
 load_dotenv(override=True)
 
 from src.poller.handler import handler
 
 if __name__ == "__main__":
-    while True:
-        print("Polling now!")
-        res = handler({}, {})
-        print("Result:", res)
-        time.sleep(180)
+    print("Polling now!")
+    res = handler({}, {})
+    print("Result:", res)
+    consume()
