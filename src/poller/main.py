@@ -125,8 +125,6 @@ def process_songs(songs: dict, user_id: int):
             "played_at": item.get("played_at"),
         }
 
-        print(f"Sending to sqs: {json.dumps(message_body)}")
-
         sqs.send_message(
             QueueUrl=queue_url,
             MessageBody=json.dumps(message_body),
