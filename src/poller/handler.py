@@ -34,27 +34,6 @@ def _get_sqs_client():
     return boto3.client("sqs", **params)
 
 
-def _get_queue_url(sqs) -> str:
-    # Prefer explicit URL in environment for production
-    url = os.getenv("SQS_QUEUE_URL")
-    if url:
-        return url
-
-    queue_name = os.environ.get("SQS_QUEUE_NAME", "recent-songs-queue")
-    try:
-        res = sqs.get_queue_url(QueueName=queue_name)
-        return res["QueueUrl"]
-    except ClientError as e:
-        if (
-            e.response.get("Error", {}).get("Code")
-            == "AWS.SimpleQueueService.NonExistentQueue"
-        ):
-            logger.info("Queue not found, creating %s", queue_name)
-            res = sqs.create_queue(QueueName=queue_name)
-            return res["QueueUrl"]
-        raise
-
-
 def _message_from_item(item: Dict, user_id: int) -> Dict:
     track = item.get("track", {})
     album = track.get("album", {})
