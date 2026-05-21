@@ -86,7 +86,20 @@ def recent_songs(user_id: int = Query(...)):
     res = requests.get(url, headers=headers)
     process_songs(res.json(), user_id)
 
-    return res.json()
+    items = res.json()["items"]
+
+    simplified = []
+
+    for payload in items:
+        print(payload["track"])
+        track = {
+            "song_name": payload["track"]["name"],
+            "artist(s)": payload["track"]["artists"][0]["name"],
+            "album": payload["track"]["album"]["name"],
+        }
+        simplified.append(track)
+
+    return simplified
 
 
 def process_songs(songs: dict, user_id: int):
