@@ -76,6 +76,12 @@ python3 -m src.scripts.init_db
 ```bash
 fastapi run src/poller/main.py --reload
 ```
+or (preferred)
+
+```bash
+uvicorn src.poller.main:app --host 0.0.0.0 --port 8000
+```
+
 Server: `http://0.0.0.0:8000`
 
 ### 5) Complete OAuth and enqueue songs
