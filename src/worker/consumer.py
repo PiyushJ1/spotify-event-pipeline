@@ -23,16 +23,16 @@ queue_url = os.getenv("SQS_QUEUE_URL")
 def consume():
     print("Consumer starting...")
 
-    while True:
+    for i in range(50):
         res = sqs.receive_message(
             QueueUrl=queue_url,
             MaxNumberOfMessages=10,
-            WaitTimeSeconds=5,
+            WaitTimeSeconds=1,
         )
 
         if "Messages" not in res:
             print("No messages in queue")
-            continue
+            break
 
         for message in res["Messages"]:
             body = json.loads(message["Body"])
