@@ -4,7 +4,7 @@ Event-driven pipeline that fetches recently played Spotify tracks, pushes them t
 
 ### https://spotify-event-pipeline-production.up.railway.app
 
-#### Note: the documentation needs to be updated since the project no longer uses LocalStack and Docker to run locally. The current database and message queue are both in production, using NeonDB and AWS SQS respectively.
+#### Note: the documentation needs to be rewritten and is not up to date.
 
 #### Use https://spotify-event-pipeline-production.up.railway.app/login to authenticate Spotify account
 
