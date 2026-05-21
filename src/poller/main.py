@@ -26,7 +26,6 @@ sqs = boto3.client(
 
 queue_url = os.getenv("SQS_QUEUE_URL")
 
-print(f"Queue created: {queue_url}")
 
 app = FastAPI(
     title="Spotify Poller",
@@ -91,7 +90,6 @@ def recent_songs(user_id: int = Query(...)):
     simplified = []
 
     for payload in items:
-        print(payload["track"])
         track = {
             "song_name": payload["track"]["name"],
             "artist(s)": payload["track"]["artists"][0]["name"],
