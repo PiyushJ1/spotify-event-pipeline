@@ -76,7 +76,7 @@ def consume():
                 date = played_at[0]
                 date = date.split("-")
 
-                new_track = f'Name: {body["track_name"]}, Artist: {body["artist"]}, Album: {body["album"]}, Played At: {played_at[1]}, {date[2]}/{date[1]}/{date[0]}'
+                new_track = f'Name: {body["track_name"]}, Artist: {body["artist"]}, Album: {body["album"]}, Played At: {played_at[1]} AEST, {date[2]}/{date[1]}/{date[0]}'
                 new_songs.append(new_track)
 
                 print(f"Saved: {body['track_name']} by {body['artist']}")
