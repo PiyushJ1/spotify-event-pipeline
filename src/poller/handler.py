@@ -20,18 +20,27 @@ logger = logging.getLogger("poller.handler")
 - Fetches recent tracks from the Spotify API and sends them to SQS.
 """
 
+region = os.environ.get("AWS_REGION", "ap-southeast-2")
+aws_key = os.environ.get("AWS_ACCESS_KEY_ID")
+aws_secret = os.environ.get("AWS_SECRET_ACCESS_KEY")
+
 
 def _get_sqs_client():
-    region = os.environ.get("AWS_REGION", "ap-southeast-2")
-    aws_key = os.environ.get("AWS_ACCESS_KEY_ID")
-    aws_secret = os.environ.get("AWS_SECRET_ACCESS_KEY")
-
     params = {"region_name": region}
     if aws_key and aws_secret:
         params["aws_access_key_id"] = aws_key
         params["aws_secret_access_key"] = aws_secret
 
     return boto3.client("sqs", **params)
+
+
+def _get_sns_client():
+    params = {"region_name": region}
+    if aws_key and aws_secret:
+        params["aws_access_key_id"] = aws_key
+        params["aws_secret_access_key"] = aws_secret
+
+    return boto3.client("sns", **params)
 
 
 def _message_from_item(item: Dict, user_id: int) -> Dict:
@@ -55,6 +64,21 @@ def _message_from_item(item: Dict, user_id: int) -> Dict:
         "popularity": track.get("popularity"),
         "played_at": item.get("played_at"),
     }
+
+
+def _send_sns_email(songs: list[str]):
+    sns_client = _get_sns_client()
+
+    message = (
+        f"Here are the songs you listened to on Spotify recently:\n\n{'\n'.join(songs)}"
+    )
+    res = sns_client.publish(
+        TopicArn=os.getenv("SNS_TOPIC_ARN"),
+        Subject="Your Spotify Listening History",
+        Message=message,
+    )
+
+    print(f'Sent recently played songs! Message ID: {res["MessageId"]}')
 
 
 def handler(event, context):
