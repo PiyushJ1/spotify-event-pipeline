@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from sqlalchemy.exc import IntegrityError, OperationalError
 from ..common.db import SessionLocal
 from ..common.models import Track, ListeningHistory
+from ..poller.handler import _send_sns_email
 
 load_dotenv()
 
@@ -23,6 +24,7 @@ queue_url = os.getenv("SQS_QUEUE_URL")
 def consume():
     print("Consumer starting...")
 
+    new_songs = []
     for i in range(50):
         res = sqs.receive_message(
             QueueUrl=queue_url,
@@ -63,6 +65,10 @@ def consume():
                 )
                 db.add(history)
                 db.commit()
+
+                new_track = f'Name: {body["track_name"]}, Artist: {body["artist"]}, Album: {body["album"]}'
+                new_songs.append(new_track)
+
                 print(f"Saved: {body['track_name']} by {body['artist']}")
 
                 # Delete message after processing
@@ -94,6 +100,9 @@ def consume():
                 db.close()
 
         time.sleep(1)
+
+    if new_songs != []:
+        _send_sns_email(new_songs)
 
 
 if __name__ == "__main__":
