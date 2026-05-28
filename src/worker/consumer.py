@@ -2,6 +2,8 @@ import boto3
 import json
 import time
 import os
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 from sqlalchemy.exc import IntegrityError, OperationalError
 from ..common.db import SessionLocal
@@ -66,7 +68,15 @@ def consume():
                 db.add(history)
                 db.commit()
 
-                new_track = f'Name: {body["track_name"]}, Artist: {body["artist"]}, Album: {body["album"]}'
+                utc_time = datetime.fromisoformat(body["played_at"])
+                aest_time = str(utc_time.astimezone(ZoneInfo("Australia/Sydney")))
+
+                played_at = aest_time.split(".")
+                played_at = played_at[0].split(" ")
+                date = played_at[0]
+                date = date.split("-")
+
+                new_track = f'Name: {body["track_name"]}, Artist: {body["artist"]}, Album: {body["album"]}, Played At: {played_at[1]}, {date[2]}/{date[1]}/{date[0]}'
                 new_songs.append(new_track)
 
                 print(f"Saved: {body['track_name']} by {body['artist']}")
