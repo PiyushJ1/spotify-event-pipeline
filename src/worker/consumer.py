@@ -111,8 +111,8 @@ def consume():
 
         time.sleep(1)
 
-    # if new_songs != []:
-    #     _send_sns_email(new_songs)
+    if new_songs != []:
+        _send_sns_email(new_songs)
 
 
 if __name__ == "__main__":
