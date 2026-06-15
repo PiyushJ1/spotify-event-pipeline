@@ -94,7 +94,7 @@ def main():
             }
 
             print(payload)
-            _send_sns_email(payload)
+            # _send_sns_email(payload)
 
     finally:
         db.close()
