@@ -121,16 +121,25 @@ def get_or_create_new_user(access_token: str):
 
     spotify_user_id = user_profile["id"]
     display_name = user_profile["display_name"]
+    email = user_profile.get("email")
 
     db = SessionLocal()
     try:
         user = db.query(User).filter_by(spotify_user_id=spotify_user_id).first()
 
         if not user:
-            user = User(spotify_user_id=spotify_user_id, display_name=display_name)
+            user = User(
+                spotify_user_id=spotify_user_id,
+                display_name=display_name,
+                email=email,
+            )
             db.add(user)
             db.commit()
             print(f"Created new user, id: {spotify_user_id}, name: {display_name}")
+        else:
+            if email and user.email != email:
+                user.email = email
+                db.commit()
 
         return user.id
     finally:

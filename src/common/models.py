@@ -24,6 +24,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     spotify_user_id: Mapped[str] = mapped_column(unique=True, index=True)
     display_name: Mapped[str | None]
+    email: Mapped[str | None]
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     auth_token: Mapped["AuthToken"] = relationship(back_populates="user", uselist=False)

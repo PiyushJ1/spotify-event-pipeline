@@ -45,7 +45,7 @@ def health_check():
 
 @app.get("/login")
 def login():
-    scope = "user-read-recently-played user-read-currently-playing"
+    scope = "user-read-recently-played user-read-currently-playing user-read-email"
     params = {
         "client_id": os.environ.get("SPOTIFY_CLIENT_ID"),
         "response_type": "code",
