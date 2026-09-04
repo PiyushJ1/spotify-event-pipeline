@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import ARRAY
 from datetime import datetime
 from sqlalchemy.sql import func
 from src.common.db import Base
@@ -61,6 +62,17 @@ class Track(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class Artist(Base):
+    __tablename__ = "artists"
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    image_url: Mapped[str | None]
+
+
+
 
 
 # stores ALL songs played by user
