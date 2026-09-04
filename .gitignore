@@ -22,3 +22,5 @@ volume/
 
 # terraform build files
 .terraform*
+
+dump.sql
