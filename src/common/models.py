@@ -72,7 +72,11 @@ class Artist(Base):
     image_url: Mapped[str | None]
 
 
+class TrackArtist(Base):
+    __tablename__ = "tracks_artists"
 
+    track_id: Mapped[str] = mapped_column(ForeignKey("tracks.id"), primary_key=True)
+    artist_id: Mapped[str] = mapped_column(ForeignKey("artists.id"), primary_key=True)
 
 
 # stores ALL songs played by user
