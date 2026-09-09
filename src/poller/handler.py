@@ -47,15 +47,20 @@ def _message_from_item(item: Dict, user_id: int) -> Dict:
     track = item.get("track", {})
     album = track.get("album", {})
 
-    artist_names = ", ".join(
-        artist.get("name") for artist in track.get("artists", []) if artist.get("name")
-    )
+    artists = [
+        {"id": a["id"], "name": a["name"]}
+        for a in track.get("artists", [])
+        if a.get("id") and a.get("name")
+    ]
+
+    artist_names = ", ".join(a["name"] for a in artists)
 
     return {
         "user_id": user_id,
         "track_id": track.get("id"),
         "track_name": track.get("name"),
         "artist": artist_names,
+        "artists": artists,
         "album": album.get("name"),
         "image_url": (
             album.get("images", [{}])[0].get("url") if album.get("images") else None
