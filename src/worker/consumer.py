@@ -5,9 +5,10 @@ import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
+from typing import List, Dict
 from sqlalchemy.exc import IntegrityError, OperationalError
 from ..common.db import SessionLocal
-from ..common.models import Track, ListeningHistory
+from ..common.models import Track, ListeningHistory, Artist, TrackArtist
 from ..poller.handler import _send_sns_email
 
 load_dotenv()
@@ -57,6 +58,9 @@ def consume():
                     )
                     db.add(track)
 
+                # link track to artist(s)
+                _link_artists(db, body["track_id"], body["artists"])
+
                 # Insert ListeningHistory
                 history = ListeningHistory(
                     track_id=body["track_id"],
@@ -75,9 +79,6 @@ def consume():
                 played_at = played_at[0].split(" ")
                 date = played_at[0]
                 date = date.split("-")
-
-                new_track = f'Name: {body["track_name"]}, Artist: {body["artist"]}, Album: {body["album"]}, Played At: {played_at[1]} AEST, {date[2]}/{date[1]}/{date[0]}'
-                # new_songs.append(new_track)
 
                 print(f"Saved: {body['track_name']} by {body['artist']}")
 
@@ -111,8 +112,25 @@ def consume():
 
         time.sleep(1)
 
-    # if new_songs != []:
-    #     _send_sns_email(new_songs)
+
+def _link_artists(db, track_id: str, artists: list[dict]):
+    if not artists:
+        return
+
+    for a in artists:
+        existing_artist = db.query(Artist).filter_by(id=a["id"]).first()
+        if not existing_artist:
+            artist = Artist(id=a["id"], name=a["name"])
+            db.add(artist)
+
+        existing_junction = (
+            db.query(TrackArtist)
+            .filter_by(track_id=track_id, artist_id=a["id"])
+            .first()
+        )
+        if not existing_junction:
+            track_artist = TrackArtist(track_id=track_id, artist_id=a["id"])
+            db.add(track_artist)
 
 
 if __name__ == "__main__":
