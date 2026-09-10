@@ -72,14 +72,6 @@ def consume():
                 db.add(history)
                 db.commit()
 
-                utc_time = datetime.fromisoformat(body["played_at"])
-                aest_time = str(utc_time.astimezone(ZoneInfo("Australia/Sydney")))
-
-                played_at = aest_time.split(".")
-                played_at = played_at[0].split(" ")
-                date = played_at[0]
-                date = date.split("-")
-
                 print(f"Saved: {body['track_name']} by {body['artist']}")
 
                 # Delete message after processing
