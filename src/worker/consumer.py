@@ -104,6 +104,13 @@ def consume():
                 print(f"DB connection error: {e}")
                 print("Skipping rest of batch — messages will be retried")
                 break
+            except (KeyError, TypeError, ValueError) as e:
+                db.rollback()
+                print(f"Malformed message, removing: {e}")
+
+                sqs.delete_message(
+                    QueueUrl=queue_url, ReceiptHandle=message["ReceiptHandle"]
+                )
             except Exception as e:
                 db.rollback()
                 print(f"DB error: {e}")
