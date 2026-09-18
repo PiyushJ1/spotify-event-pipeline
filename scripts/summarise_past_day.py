@@ -24,7 +24,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct")
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 RESEND_FROM_EMAIL = os.getenv(
-    "RESEND_FROM_EMAIL", "Spotify Wrapped Daily <onboarding@resend.dev>"
+    "RESEND_FROM_EMAIL", "Spotify Wrapped <onboarding@resend.dev>"
 )
 
 
