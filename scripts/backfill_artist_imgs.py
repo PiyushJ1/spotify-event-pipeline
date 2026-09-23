@@ -14,6 +14,15 @@ from src.poller.auth import get_valid_access_token
 db = None
 
 
+def get_artist_image_url(user_id: int, artist_id: int):
+    headers = {"Authorization": f"Bearer {get_valid_access_token(user_id)}"}
+    res = requests.get(
+        f"https://api.spotify.com/v1/artists/{artist_id}", headers=headers
+    )
+
+    return res.json()["images"][0]["url"]
+
+
 def main():
     db = psycopg2.connect(os.getenv("DATABASE_URL"))
     cur = db.cursor()
