@@ -10,6 +10,8 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 from ..common.db import SessionLocal
 from ..common.models import Track, ListeningHistory, Artist, TrackArtist
 from ..poller.handler import _send_sns_email
+from ..poller.auth import get_valid_access_token
+from scripts.backfill_artist_imgs import get_artist_image_url
 
 load_dotenv()
 
@@ -59,7 +61,7 @@ def consume():
                     db.add(track)
 
                 # link track to artist(s)
-                _link_artists(db, body["track_id"], body["artists"])
+                _link_artists(db, body["user_id"], body["track_id"], body["artists"])
 
                 # Insert ListeningHistory
                 history = ListeningHistory(
@@ -112,14 +114,16 @@ def consume():
         time.sleep(1)
 
 
-def _link_artists(db, track_id: str, artists: list[dict]):
+def _link_artists(db, user_id: int, track_id: str, artists: list[dict]):
     if not artists:
         return
 
     for a in artists:
+        # add artist to db if they don't exist
         existing_artist = db.query(Artist).filter_by(id=a["id"]).first()
         if not existing_artist:
-            artist = Artist(id=a["id"], name=a["name"])
+            img_url = get_artist_image_url(user_id, a["id"])
+            artist = Artist(id=a["id"], name=a["name"], image_url=img_url)
             db.add(artist)
 
         existing_junction = (
