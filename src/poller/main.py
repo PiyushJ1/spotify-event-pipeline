@@ -35,7 +35,11 @@ app = FastAPI(
 
 @app.get("/")
 def read_root():
-    return {"status": "online", "service": "poller"}
+    return {
+        "status": "online",
+        "service": "poller",
+        "login": "go to https://spotify-event-pipeline-production.up.railway.app/login to connect your spotify account"
+    }
 
 
 @app.get("/health")
