@@ -23,4 +23,5 @@ volume/
 # terraform build files
 .terraform*
 
-dump.sql
+# database dumps
+db_snapshots/
