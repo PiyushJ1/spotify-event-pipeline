@@ -1,4 +1,4 @@
-# tasks/fixes to be done
+# tasks/fixes
 
 1. introduce natural language to SQL conversion queries
 3. add position column to artist to determine which artist is the primary or a feature
